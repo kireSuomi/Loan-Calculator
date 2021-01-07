@@ -33,6 +33,9 @@ function calcUnder(showAmor) {
 
 
     let interest = (loan_left * monthly_interest_rate)
+    
+
+    //Make sure its the correct rounding (same as the excel doc) https://docs.google.com/spreadsheets/d/1HHPALfN8jDn6dj74pNZQ7nULFRRO-C-tWqPCDfJn6gw/edit#gid=1743341663
     if (typeof interest == 'float') {
       interest = interest.toFixed()
     }
