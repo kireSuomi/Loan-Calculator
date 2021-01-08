@@ -1,86 +1,74 @@
 
 let property_value = 10_000_000
-let loan_amount = 8_000_000
+let loan_amount = 6_000_000
 let loan_left = loan_amount
 
-function getAmortization(loan_to_value, overMultiple = false){
-   // let amortization  = ( loan_to_value > 0.7? (0.02 *loan_amount) /12:0 ) + ((loan_to_value < 0.7 &&loan_to_value > 0.5)?(0.01*loan_amount)/12:0) + (0.01*loan_amount)/12
-   
-    let amortization;
-    amortization = loan_to_value > 0.7 ? ( 0.02 *loan_amount ) / 12:0 
-    amortization += loan_to_value < 0.7 && loan_to_value > 0.5 ? ( 0.01* loan_amount ) / 12 : 0
-    if (overMultiple) amortization += ( 0.01 * loan_amount ) /12
-    amortization = Math.round(amortization)
-    return amortization
-}
 
+class LoanCalculator {
 
-function getMonth(month = 1){
-
-}
-
-//Under 4.5
-function calcUnder(showAmor) {
-
-
-    let loan_to_value =  (loan_left / property_value).toFixed(2)
-    
-    let clean_loan_to_value = (loan_to_value * 100 ) + "%"
-    let clean_interest_rate = 1.5 //
-    
-    let interest_rate = clean_interest_rate / 100
-    let monthly_interest_rate = interest_rate / 12
-
-
-    let interest = (loan_left * monthly_interest_rate)
-    
-
-    //Make sure its the correct rounding (same as the excel doc) https://docs.google.com/spreadsheets/d/1HHPALfN8jDn6dj74pNZQ7nULFRRO-C-tWqPCDfJn6gw/edit#gid=1743341663
-    if (typeof interest == 'float') {
-      interest = interest.toFixed()
+    /*
+    #
+    # loanAmount = The request loan amount (user input)
+    # houseValueEstimate  = The value of the house
+    # interest: the interest rate, as given in backend (eg: 1.5% / 1.5)
+    #
+    */
+    constructor(loanAmount, houseValueEsitmate, interest ) {
+        this.loanAmount = loanAmount
+        this.loanLeft = loanAmount
+        this.interestRate = interest / 100
+        this.monthlyInterestRate = (interest / 100) / 12
+        this.houseValue = houseValueEsitmate
     }
 
-    let amortization = getAmortization(loan_to_value)
-    let payment_amount = Math.floor(interest + amortization, false)
-    console.log("Interest: " + interest.toLocaleString());
-    console.log("Interest ce: " + interest.toFixed().toLocaleString());
-    //console.log("Loan to value (r): " + loan_to_value);
 
-    console.log('Loan To value: ' + clean_loan_to_value);
+    Amortization(loan_to_value, overMultiple) {
+        let amortization;
+        amortization = loan_to_value > 0.7 ? ( 0.02 *loan_amount ) / 12:0 
+        amortization += loan_to_value < 0.7 && loan_to_value > 0.5 ? ( 0.01* loan_amount ) / 12 : 0
+        if (overMultiple) amortization += ( 0.01 * loan_amount ) /12
+        return amortization
+    }
 
-    if (showAmor)    console.log("Amortization: " + amortization.toLocaleString());
+    PaymentAmount(overIncomeMultiple) {
+        const loan_to_value = this.loanLeft / this.houseValue
+        const amortization = this.Amortization(loan_to_value, overIncomeMultiple)
+        let interest = (this.loanLeft * this.monthlyInterestRate)
 
-    console.log("Payment Amount: " + payment_amount.toLocaleString());
-    console.log("Loan Amount: " + loan_left);
-    console.log(" ");
-    loan_left -= amortization
+        let payment_amount = (interest + amortization) % 0.5 > 0.5 ? Math.ceil(interest + amortization) : interest + amortization
+        if (payment_amount % 1 != 0) {
+            payment_amount = payment_amount.toFixed(0)
+        }
+        this.loanLeft -= amortization
+        return {
+            interest: interest,
+            amortization: amortization,
+            loanLeft :this.loanLeft,
+            ltv : loan_to_value,
+            paymentAmount: payment_amount,
+            staticData: {
+                loanAmount: this.loanAmount,
+                houseValue: this.houseValue,
+                interest: this.interestRate
+            }
+        }
+    }
 
-
-
-
-
-
-        // console.log(`Property value: ` + property_value)
-        // console.log(`Loan amount: ` + loan_amount);
+    getYear(){
         
-        // console.log(`Interestrate: ` + clean_interest_rate);
- 
-}
 
-
-function getOver(){
-
-}
+    }
 
 
 
+    month(){ 
 
-x = 10
-while (x > 0) {
-    x  === 0 ? calcUnder(true) : calcUnder()
-    x--
+    }
+
 }
 
 
 
-
+const Calculator = new LoanCalculator(6_000_000, 10_000_000, 1.5)
+const month = Calculator.PaymentAmount()
+console.log(month);
