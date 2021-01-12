@@ -1,7 +1,4 @@
 
-let property_value = 10_000_000
-let loan_amount = 6_000_000
-let loan_left = loan_amount
 
 
 class LoanCalculator {
@@ -19,29 +16,32 @@ class LoanCalculator {
         this.interestRate = interest / 100
         this.monthlyInterestRate = (interest / 100) / 12
         this.houseValue = houseValueEsitmate
+        this.total_payment = 0
+    }
+
+    Reset(){
+        this.loanLeft = this.loanAmount
+        this.total_payment = 0
+ 
     }
 
 
-    Amortization(loan_to_value, overMultiple) {
+    Amortization(loan_to_value, overMultiple = false) {
         let amortization;
-        amortization = loan_to_value > 0.7 ? ( 0.02 *loan_amount ) / 12:0 
-        amortization += loan_to_value < 0.7 && loan_to_value > 0.5 ? ( 0.01* loan_amount ) / 12 : 0
-        if (overMultiple) amortization += ( 0.01 * loan_amount ) /12
+        amortization = loan_to_value > 0.7 ? ( 0.02 * this.loanAmount ) / 12:0 
+        amortization += loan_to_value < 0.7 && loan_to_value > 0.5 ? ( 0.01*  this.loanAmount ) / 12 : 0
+        if (overMultiple) amortization += ( 0.01 *  this.loanAmount ) /12
         return amortization
     }
     
     GetTaxReduction(interest){
-        if (this.loanAmount > 100_000) {
-            return interest * 0.79;
-        } else {
-            return interest * 0.7
-        }
+        return interest * 0.7
     }
 
     GetPaymentAmount(interest, amortization) {
         let amount = (interest + amortization) % 0.5 > 0.5 ? Math.ceil(interest + amortization) : interest + amortization
         if (amount % 1 != 0) {
-            amount = payment_amount.toFixed(0)
+            amount = amount.toFixed(0)
         }
         return amount
     }
@@ -50,22 +50,25 @@ class LoanCalculator {
         let interest;
 
         if (extraInterest !== 0) {
-            interest = this.loanLeft * (this.monthlyInterestRate + extraInterest)
+            
+             interest = (extraInterest + this.interestRate) * (this.loanAmount / 12)
+
         } else {
             interest = this.loanLeft * this.monthlyInterestRate
         }
-        return interest
+        return Math.round(interest.toFixed(1))
     }
 
 
     PaymentAmount(overIncomeMultiple) {
         const loan_to_value = this.loanLeft / this.houseValue
-        const amortization = this.Amortization(loan_to_value, overIncomeMultiple)
+        const amortization = Math.round(this.Amortization(loan_to_value, overIncomeMultiple))
+
         const interest = this.GetInterest()
 
         const interest_plus_1 = this.GetInterest(0.01)
         const interest_plus_2 = this.GetInterest(0.02)
-        const interest_plus_3 = this.GetInterest(0.03)
+       const interest_plus_3 = this.GetInterest(0.03)
 
         const interest_post_tax = this.GetTaxReduction(interest);
     
@@ -73,49 +76,87 @@ class LoanCalculator {
         const paymeny_amount_post_tax = this.GetPaymentAmount(interest_post_tax, amortization)
 
         //Payment amount but with extra interest rates
+
         const payment_amount_1 = this.GetPaymentAmount(interest_plus_1, amortization)
         const payment_amount_2 = this.GetPaymentAmount(interest_plus_2, amortization)
         const payment_amount_3 = this.GetPaymentAmount(interest_plus_3, amortization)
 
-        //this.loanLeft -= amortization
+        this.total_payment += payment_amount
+        this.loanLeft -= amortization
+  
         return {
             interest: interest,
-            interest_post_tax: interest_post_tax,
             amortization: amortization,
-            //loanLeft :this.loanLeft,
-            ltv : loan_to_value,
-            paymentAmount: payment_amount,
-            paymentAmountTax: paymeny_amount_post_tax,
+            total_payment: this.total_payment,
+            payment_amount: payment_amount,
+            payment_amount_tax: paymeny_amount_post_tax,
             staticData: {
                 loanAmount: this.loanAmount,
                 houseValue: this.houseValue,
                 interest: this.interestRate
             },
-            extraInterest:  {
-                extraInterest1: payment_amount_1,
-                extraInterest2: payment_amount_2,
-                extraInterest3: payment_amount_3
-            }
+            extra_interest_1: payment_amount_1,
+            extra_interest_2: payment_amount_2,
+            extra_interest_3: payment_amount_3
         }
     }
 
-    getYear(){
-        
-
-    }
 
 
 
-    month(){ 
 
-    }
+    
 
 }
 
 
+const loan_amount = 4_000_000
+const house_value = 10_000_000
+const Calculator = new LoanCalculator(loan_amount, house_value , 1.5)
 
-const Calculator = new LoanCalculator(6_000_000, 10_000_000, 1.5)
-const month = Calculator.PaymentAmount()
-const month2 = Calculator.PaymentAmount(true)
-console.log(month);
-console.log(month2);
+const months_over = []
+for (let index = 0; index < 12; index++) {
+    const month = Calculator.PaymentAmount(true)
+    months_over.push(month)
+    
+}
+
+Calculator.Reset()
+
+const months_under = []
+for (let index = 0; index < 12; index++) {
+    const month = Calculator.PaymentAmount(false)
+    months_under.push(month)
+    
+}
+
+console.log(months_over);
+console.log(months_under);
+
+
+const table = document.getElementById("table")
+const underX = document.getElementById("under")
+const overX = document.getElementById("over")
+const salary_sample = Math.round(loan_amount / 4.5 / 12)
+underX.innerHTML = "Över: " + salary_sample.toLocaleString().replace(",", ' ') + "kr"
+overX.innerHTML = "under: " + salary_sample.toLocaleString().replace(",", ' ') + "kr"
+
+const over = table.querySelectorAll("[data-over]")
+over.forEach(element => {
+    const key = Object.entries(element.attributes)[1][1].nodeName
+    if (key === "total_payment") {
+        element.innerHTML = months_over[11][key].toLocaleString().replace(",", " ");
+        return 
+    }
+    element.innerHTML = months_over[0][key].toLocaleString().replace(",", " ");
+});
+
+const under = table.querySelectorAll("[data-under]")
+under.forEach(element => {
+    const key = Object.entries(element.attributes)[1][1].nodeName
+    if (key === "total_payment") {
+        element.innerHTML = months_under[11][key].toLocaleString().replace(",", " ");
+        return 
+    }
+    element.innerHTML = months_under[0][key].toLocaleString().replace(",", " ");
+});

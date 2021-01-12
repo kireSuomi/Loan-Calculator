@@ -8,23 +8,58 @@
 </head>
 <body>
 
-    <table id="table" >
+      <table id="table" >
         <tr>
-          <td>Firstname</th>
-          <td>Lastname</th>
-          <td>Age</th>
+          <td></th>
+          <td colspan="2">Är din/er månadslön</th>
+    
         </tr>
-        <tr>
-          <td>Jill</td>
-          <td>Smith</td>
-          <td>50</td>
-        </tr>
-        <tr>
-          <td>Eve</td>
-          <td>Jackson</td>
-          <td>94</td>
-        </tr>
-      </table>
+          <tr>
+            <td></th>
+            <td id="under">Under: </th>
+            <td id="over">Över: </th>
+          </tr>
+          <tr>
+            <td>Ränta första månaden: </td>
+            <td data-over interest></td>
+            <td data-under interest></td>
+          </tr>
+          <tr>
+            <td>Amortering första månaden</td>
+            <td data-over amortization></td>
+            <td data-under amortization></td>
+          </tr>
+          <tr>
+            <td>Att betala per månad före skattereduktion:</td>
+            <td data-over payment_amount></td>
+            <td data-under payment_amount></td>
+          </tr>
+          <tr>
+            <td>Att betala per månad efter skattereduktion:</td>
+            <td data-over payment_amount_tax></td>
+            <td data-under payment_amount_tax></td>
+          </tr>
+          <tr>
+            <td>Kostnad ränta och amortering första året:</td>
+            <td data-over total_payment></td>
+            <td data-under total_payment></td>
+          </tr>
+          <tr>
+            <td>Att betala per månad vid räntehöjning 1%: </td>
+            <td data-over extra_interest_1></td>
+            <td data-under extra_interest_1></td>
+          </tr>
+          <tr>
+            <td>Att betala per månad vid räntehöjning 2%: </td>
+            <td data-over extra_interest_2></td>
+            <td data-under extra_interest_2></td>
+          </tr>
+          <tr>
+            <td>Att betala per månad vid räntehöjning 3%: </td>
+            <td data-over extra_interest_3></td>
+            <td data-under extra_interest_3></td>
+          </tr>
+        </table>
     
     <script src="index.js"></script>
 </body>
